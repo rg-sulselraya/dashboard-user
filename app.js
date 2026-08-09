@@ -39,6 +39,7 @@ let activeMode = "grade";
 let selectedSchool = null;
 let gradeChart;
 let selectedGradeBreakdown = null;
+let schoolSearchQuery = "";
 
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
@@ -694,7 +695,12 @@ function renderGradeTable(targetId, rows) {
 
 function renderMainTable(rows) {
   const level = byId("levelSelect").value;
-  const filtered = rows.filter((row) => level === "all" || row.level === level);
+  const query = schoolSearchQuery.toLowerCase();
+  const filtered = rows.filter((row) => {
+    if (level !== "all" && row.level !== level) return false;
+    if (activeMode === "school" && query && !row.name.toLowerCase().includes(query)) return false;
+    return true;
+  });
   if (activeMode === "school" && selectedSchool && !filtered.some((row) => row.name === selectedSchool)) {
     selectedSchool = null;
   }
@@ -710,6 +716,10 @@ function renderMainTable(rows) {
             ? "selected-breakdown-row"
             : "";
       const dataSchool = activeMode === "school" ? ` data-school="${escapeHtml(row.name)}"` : "";
+      const selectedMetric =
+        activeMode === "grade" && selectedGradeBreakdown?.grade === row.grade
+          ? selectedGradeBreakdown.metric
+          : "";
       const gradeData =
         activeMode === "grade"
           ? ` data-grade="${escapeHtml(row.grade)}" data-previous-total="${row.previousTotal}" data-previous="${row.previous}" data-current="${row.current}"`
@@ -740,9 +750,9 @@ function renderMainTable(rows) {
       return `
         <tr class="${clickable} ${selected}"${dataSchool}${gradeData}>
           <td>${label}</td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previousTotal"><span class="breakdown-pill">${numberText(row.previousTotal)}</span></td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previous"><span class="breakdown-pill">${numberText(row.previous)}</span></td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="current"><span class="breakdown-pill">${numberText(row.current)}</span></td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""} ${selectedMetric === "previousTotal" ? "selected-breakdown-cell" : ""}" data-metric="previousTotal"><span class="breakdown-pill">${numberText(row.previousTotal)}</span></td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""} ${selectedMetric === "previous" ? "selected-breakdown-cell" : ""}" data-metric="previous"><span class="breakdown-pill">${numberText(row.previous)}</span></td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""} ${selectedMetric === "current" ? "selected-breakdown-cell" : ""}" data-metric="current"><span class="breakdown-pill">${numberText(row.current)}</span></td>
           <td class="${trendClass(row.growth)}">${row.growth}</td>
           <td>${numberText(row.target)}</td>
           <td><span class="${achievementClass(achievement)}"${achievementStyle(achievement)}>${achievementText(row.current, row.target)}</span></td>
@@ -1008,11 +1018,15 @@ function activeTitle() {
 function render() {
   const mainRows = activeRows();
   const dashboardGrid = document.querySelector(".dashboard-grid");
+  const schoolSearchBar = byId("schoolSearchBar");
+  const schoolSearchInput = byId("schoolSearchInput");
 
   byId("subtitle").textContent = `${activeBranch} | ${branchRegion(activeBranch) || "-"}`;
   byId("mainGrowthTitle").textContent = `${activeMode === "school" ? "User per Sekolah" : "User per Grade"} - ${activeTitle()}`;
   byId("mainDimensionHeader").textContent = activeMode === "school" ? "SEKOLAH" : "GRADE";
   byId("branchTableCaption").textContent = activeTitle();
+  schoolSearchBar.hidden = activeMode !== "school";
+  schoolSearchInput.value = schoolSearchQuery;
   renderSummary();
   renderMainTable(mainRows);
   renderGradeSchoolBreakdown();
@@ -1068,11 +1082,24 @@ byId("levelSelect").addEventListener("change", () => {
 });
 byId("refreshBtn").addEventListener("click", loadSheet);
 
+byId("schoolSearchInput").addEventListener("input", (event) => {
+  schoolSearchQuery = event.target.value.trim();
+  selectedSchool = null;
+  render();
+});
+
+byId("clearSchoolSearch").addEventListener("click", () => {
+  schoolSearchQuery = "";
+  selectedSchool = null;
+  render();
+});
+
 document.querySelectorAll(".mode-tab").forEach((button) => {
   button.addEventListener("click", () => {
     activeMode = button.dataset.mode;
     selectedSchool = null;
     selectedGradeBreakdown = null;
+    schoolSearchQuery = "";
     render();
   });
 });
