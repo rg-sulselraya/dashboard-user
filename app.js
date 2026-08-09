@@ -420,8 +420,8 @@ function growthLabel(previous, current) {
   if (previous === 0) return "⬆ New";
   const ratio = current / previous;
   const value = ratio.toLocaleString("id-ID", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
   if (current > previous) return `⬆ ${value}`;
   if (current < previous) return `⬇ ${value}`;
@@ -644,11 +644,11 @@ function renderSummary() {
 
   byId("branchLabel").textContent = activeBranch;
   byId("branchUsers").textContent = numberText(branch.current);
-  byId("branchMeta").innerHTML = `Target ${numberText(branch.target)} | Achievement ${percentText(branch.achievement)} | Growth <span class="${trendClass(branch.growth)}">${branch.growth}</span>`;
+  byId("branchMeta").innerHTML = `25/26 YTD ${numberText(branch.previous)} | Target ${numberText(branch.target)} | Achievement ${percentText(branch.achievement)} | Growth <span class="${trendClass(branch.growth)}">${branch.growth}</span>`;
   byId("makassarUsers").textContent = numberText(makassar.current);
-  byId("makassarMeta").innerHTML = `Target ${numberText(makassar.target)} | Achievement ${percentText(makassar.achievement)} | Growth <span class="${trendClass(makassar.growth)}">${makassar.growth}</span>`;
+  byId("makassarMeta").innerHTML = `25/26 YTD ${numberText(makassar.previous)} | Target ${numberText(makassar.target)} | Achievement ${percentText(makassar.achievement)} | Growth <span class="${trendClass(makassar.growth)}">${makassar.growth}</span>`;
   byId("sulselUsers").textContent = numberText(sulsel.current);
-  byId("sulselMeta").innerHTML = `Target ${numberText(sulsel.target)} | Achievement ${percentText(sulsel.achievement)} | Growth <span class="${trendClass(sulsel.growth)}">${sulsel.growth}</span>`;
+  byId("sulselMeta").innerHTML = `25/26 YTD ${numberText(sulsel.previous)} | Target ${numberText(sulsel.target)} | Achievement ${percentText(sulsel.achievement)} | Growth <span class="${trendClass(sulsel.growth)}">${sulsel.growth}</span>`;
   const sd = sumRows(viewGrades, "SD");
   const smp = sumRows(viewGrades, "SMP");
   const sma = sumRows(viewGrades, "SMA");
