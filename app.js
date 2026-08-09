@@ -485,9 +485,7 @@ function summaryFromSheet(scope, level = "all") {
   const current = users2627.filter(
     (record) =>
       inScope(record, scope) &&
-      matchesLevel(record) &&
-      record.paidDate &&
-      record.paidDate <= TODAY,
+      matchesLevel(record),
   ).length;
   const target = targetTotalForScope(scope, level);
   return {
