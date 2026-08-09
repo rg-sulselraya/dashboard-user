@@ -261,6 +261,10 @@ function achievementStyle(value) {
 function parseDate(value) {
   const text = clean(value);
   if (!text) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
   const monthMap = {
     Jan: 0,
     Feb: 1,
