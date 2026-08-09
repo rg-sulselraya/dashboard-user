@@ -729,6 +729,7 @@ th:last-child {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   min-height: 18px;
   margin-top: 5px;
   border-radius: 999px;
