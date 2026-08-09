@@ -877,12 +877,7 @@ tbody tr:hover {
   color: var(--rg-orange);
 }
 
-.selected-breakdown-row td:first-child,
-.selected-breakdown-row .breakdown-trigger {
-  color: var(--rg-orange);
-}
-
-.selected-breakdown-row .breakdown-pill {
+.selected-breakdown-cell .breakdown-pill {
   background: #fff0e4;
   color: var(--rg-orange);
 }
