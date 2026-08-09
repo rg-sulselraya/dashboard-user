@@ -35,12 +35,19 @@ body.locked .shell {
   display: none;
 }
 
+body.locked {
+  overflow: hidden;
+}
+
 .password-gate {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
   display: grid;
   place-items: center;
   padding: 20px;
   background: linear-gradient(135deg, #eef6f9, #dff6f8);
+  overflow: auto;
 }
 
 body:not(.locked) .password-gate {
@@ -54,6 +61,10 @@ body:not(.locked) .password-gate {
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 18px 40px rgba(0, 95, 134, 0.18);
+}
+
+.password-card .eyebrow {
+  color: var(--rg-blue);
 }
 
 .password-card h1 {
