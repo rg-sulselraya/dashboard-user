@@ -1,5 +1,7 @@
 const SHEET_ID = "1IZmTVAEVmTzEUqG_HmaRWpki-orOVjD5SdmLpDuygJg";
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq`;
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzHL1yp5FpI_6nTSWTuw7SblLPYILKDESNIaQQIP5ba1AJgCan-pmmzAv3hAk4AvjwEIA/exec";
 
 const GRADES = [
   "1 SD",
@@ -143,6 +145,17 @@ async function loadSheetRowsWithFallback(sheetName) {
     window.USING_LOCAL_DATA = true;
     return parseCSV(csv);
   }
+}
+
+async function loadSheetsFromAppsScript() {
+  const url = `${APPS_SCRIPT_URL}?cacheBust=${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error("Apps Script tidak bisa dibaca");
+  const payload = await response.json();
+  if (!payload.sheets?.["2526"] || !payload.sheets?.["2627"] || !payload.sheets?.Validasi) {
+    throw new Error("Format data Apps Script tidak sesuai");
+  }
+  return payload;
 }
 
 function parseCSV(text) {
@@ -977,11 +990,12 @@ async function loadSheet() {
   TODAY = startOfToday();
   PREVIOUS_YTD_LIMIT = previousYtdLimit(TODAY);
   try {
-    const [rows2526, rows2627, rowsValidasi] = await Promise.all([
-      loadSheetRowsWithFallback("2526"),
-      loadSheetRowsWithFallback("2627"),
-      loadSheetRowsWithFallback("Validasi"),
-    ]);
+    const payload = await loadSheetsFromAppsScript();
+    const [rows2526, rows2627, rowsValidasi] = [
+      payload.sheets["2526"],
+      payload.sheets["2627"],
+      payload.sheets.Validasi,
+    ];
     users2526 = recordsFromSheet(rows2526);
     users2627 = recordsFromSheet(rows2627);
     validationRows = rowsValidasi;
@@ -989,16 +1003,10 @@ async function loadSheet() {
     if (!branches.includes(activeBranch)) activeBranch = branches[0] || activeBranch;
     renderBranchOptions();
     render();
-    if (window.USING_LOCAL_DATA) {
-      const updatedAt = window.LOCAL_SHEET_UPDATED_AT
-        ? `Data tersimpan: ${new Date(window.LOCAL_SHEET_UPDATED_AT).toLocaleString("id-ID")}`
-        : "Data tersimpan, bukan live";
-      byId("syncText").textContent = updatedAt;
-      byId("syncDot").className = "dot error";
-    } else {
-      byId("syncText").textContent = "Live Google Sheet";
-      byId("syncDot").className = "dot ok";
-    }
+    byId("syncText").textContent = payload.updatedAt
+      ? `Live Apps Script: ${new Date(payload.updatedAt).toLocaleString("id-ID")}`
+      : "Live Apps Script";
+    byId("syncDot").className = "dot ok";
   } catch (error) {
     byId("syncText").textContent = "Gagal membaca Google Sheet";
     byId("syncDot").className = "dot error";
