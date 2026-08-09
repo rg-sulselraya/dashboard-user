@@ -467,6 +467,38 @@ function sumRows(rows, level = "all") {
   };
 }
 
+function targetTotalForScope(scope, level = "all") {
+  return gradeRows(scope)
+    .filter((row) => level === "all" || row.level === level)
+    .reduce((sum, row) => sum + row.target, 0);
+}
+
+function summaryFromSheet(scope, level = "all") {
+  const matchesLevel = (record) => level === "all" || record.level === level;
+  const previous = users2526.filter(
+    (record) =>
+      inScope(record, scope) &&
+      matchesLevel(record) &&
+      record.paidDate &&
+      record.paidDate <= PREVIOUS_YTD_LIMIT,
+  ).length;
+  const current = users2627.filter(
+    (record) =>
+      inScope(record, scope) &&
+      matchesLevel(record) &&
+      record.paidDate &&
+      record.paidDate <= TODAY,
+  ).length;
+  const target = targetTotalForScope(scope, level);
+  return {
+    previous,
+    current,
+    target,
+    achievement: achievementRatio(current, target),
+    growth: growthLabel(previous, current),
+  };
+}
+
 function schoolRows(branch) {
   return targetSchools(branch).map((target) => {
     const scope = { type: "branch", value: branch };
@@ -604,11 +636,13 @@ function renderBranchOptions() {
 
 function renderSummary() {
   const level = byId("levelSelect").value;
-  const branchGrades = gradeRows({ type: "branch", value: activeBranch });
+  const branchScope = { type: "branch", value: activeBranch };
+  const makassarScope = { type: "region", value: "Regional - Makassar Raya" };
+  const sulselScope = { type: "region", value: "Regional - Sulawesi Selatan" };
   const viewGrades = activeRows();
-  const branch = sumRows(branchGrades, level);
-  const makassar = sumRows(gradeRows({ type: "region", value: "Regional - Makassar Raya" }), level);
-  const sulsel = sumRows(gradeRows({ type: "region", value: "Regional - Sulawesi Selatan" }), level);
+  const branch = summaryFromSheet(branchScope, level);
+  const makassar = summaryFromSheet(makassarScope, level);
+  const sulsel = summaryFromSheet(sulselScope, level);
 
   byId("branchLabel").textContent = activeBranch;
   byId("branchUsers").textContent = numberText(branch.current);
