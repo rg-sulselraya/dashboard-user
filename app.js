@@ -40,6 +40,33 @@ let selectedGradeBreakdown = null;
 
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
+const DASHBOARD_PASSWORD = "rgsulselraya";
+
+function unlockDashboard() {
+  document.body.classList.remove("locked");
+  sessionStorage.setItem("dashboardUnlocked", "true");
+}
+
+function setupPasswordGate() {
+  const form = byId("passwordForm");
+  const input = byId("passwordInput");
+  const error = byId("passwordError");
+  if (sessionStorage.getItem("dashboardUnlocked") === "true") {
+    unlockDashboard();
+    return;
+  }
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (input.value === DASHBOARD_PASSWORD) {
+      unlockDashboard();
+      error.hidden = true;
+      return;
+    }
+    error.hidden = false;
+    input.value = "";
+    input.focus();
+  });
+}
 
 function sheetUrl(sheetName) {
   const gids = {
@@ -1044,4 +1071,5 @@ document.querySelectorAll(".view-tab").forEach((button) => {
   });
 });
 
+setupPasswordGate();
 loadSheet();

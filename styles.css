@@ -30,6 +30,71 @@ body {
     sans-serif;
 }
 
+
+body.locked .shell {
+  display: none;
+}
+
+.password-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #eef6f9, #dff6f8);
+}
+
+body:not(.locked) .password-gate {
+  display: none;
+}
+
+.password-card {
+  width: min(420px, 100%);
+  padding: 24px;
+  border: 1px solid rgba(0, 119, 163, 0.2);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(0, 95, 134, 0.18);
+}
+
+.password-card h1 {
+  margin: 4px 0 18px;
+  color: var(--rg-blue-dark);
+}
+
+.password-card label {
+  display: block;
+}
+
+.password-card input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-top: 6px;
+  padding: 0 12px;
+  color: var(--ink);
+  font: inherit;
+}
+
+.password-card button {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  margin-top: 14px;
+  background: var(--rg-blue);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.password-error {
+  margin-top: 10px;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 button,
 select {
   font: inherit;
@@ -41,14 +106,24 @@ select {
   padding: 18px 0 34px;
 }
 
+.sticky-dashboard-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -18px 0 12px;
+  padding-top: 10px;
+  background: rgba(238, 246, 249, 0.96);
+  backdrop-filter: blur(10px);
+}
+
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  min-height: 92px;
-  margin-bottom: 12px;
-  padding: 18px 22px;
+  gap: 14px;
+  min-height: 68px;
+  margin-bottom: 8px;
+  padding: 12px 16px;
   border-radius: 8px;
   background: var(--rg-blue);
   color: white;
@@ -72,8 +147,8 @@ p {
 
 h1 {
   margin-top: 2px;
-  font-size: clamp(28px, 3.2vw, 44px);
-  line-height: 1.02;
+  font-size: 28px;
+  line-height: 1;
 }
 
 h2 {
@@ -162,7 +237,7 @@ h2 {
   grid-template-columns: minmax(260px, 0.9fr) minmax(360px, 1.1fr) 180px auto;
   gap: 12px;
   align-items: end;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   padding: 12px;
 }
 

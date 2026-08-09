@@ -3,48 +3,62 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Monitoring Growth User</title>
+    <title>Dashboard Monitoring User Regional SulselRaya</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="locked">
+    <section id="passwordGate" class="password-gate" aria-label="Masuk dashboard">
+      <form id="passwordForm" class="password-card">
+        <p class="eyebrow">Dashboard Monitoring</p>
+        <h1>User Regional SulselRaya</h1>
+        <label>
+          <span>Password</span>
+          <input id="passwordInput" type="password" autocomplete="current-password" autofocus />
+        </label>
+        <button type="submit">Masuk</button>
+        <p id="passwordError" class="password-error" hidden>Password salah</p>
+      </form>
+    </section>
     <main class="shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Dashboard Monitoring</p>
-          <h1>Growth User</h1>
-          <p id="subtitle" class="muted">Live dari Google Sheet</p>
-        </div>
-        <div class="status">
-          <span id="syncDot" class="dot"></span>
-          <span id="syncText">Mengambil data...</span>
-        </div>
-      </header>
-
-      <section class="filters" aria-label="Filter dashboard">
-        <label>
-          <span>Nama branch</span>
-          <select id="branchSelect"></select>
-        </label>
-        <div class="view-control">
-          <span>Pilih tampilan</span>
-          <div class="view-tabs" aria-label="Pilih tampilan growth">
-            <button class="view-tab active" data-view="branch" type="button">Branch</button>
-            <button class="view-tab" data-view="makassar" type="button">Makassar Raya</button>
-            <button class="view-tab" data-view="sulsel" type="button">Sulawesi Selatan</button>
+      <div class="sticky-dashboard-head">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Dashboard Monitoring</p>
+            <h1>User Regional SulselRaya</h1>
+            <p id="subtitle" class="muted">Live dari Google Sheet</p>
           </div>
-        </div>
-        <label>
-          <span>Level</span>
-          <select id="levelSelect">
-            <option value="all">Semua Level</option>
-            <option value="SD">SD</option>
-            <option value="SMP">SMP</option>
-            <option value="SMA">SMA</option>
-          </select>
-        </label>
-        <button id="refreshBtn" class="refresh" type="button">Refresh</button>
-      </section>
+          <div class="status">
+            <span id="syncDot" class="dot"></span>
+            <span id="syncText">Mengambil data...</span>
+          </div>
+        </header>
+
+        <section class="filters" aria-label="Filter dashboard">
+          <label>
+            <span>Nama branch</span>
+            <select id="branchSelect"></select>
+          </label>
+          <div class="view-control">
+            <span>Pilih tampilan</span>
+            <div class="view-tabs" aria-label="Pilih tampilan growth">
+              <button class="view-tab active" data-view="branch" type="button">Branch</button>
+              <button class="view-tab" data-view="makassar" type="button">Makassar Raya</button>
+              <button class="view-tab" data-view="sulsel" type="button">Sulawesi Selatan</button>
+            </div>
+          </div>
+          <label>
+            <span>Level</span>
+            <select id="levelSelect">
+              <option value="all">Semua Level</option>
+              <option value="SD">SD</option>
+              <option value="SMP">SMP</option>
+              <option value="SMA">SMA</option>
+            </select>
+          </label>
+          <button id="refreshBtn" class="refresh" type="button">Refresh</button>
+        </section>
+      </div>
 
       <section class="summary-grid" aria-label="Dashboard jumlah user">
         <article id="branchCard" class="summary-card selected" data-view="branch" role="button" tabindex="0">
