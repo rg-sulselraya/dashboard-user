@@ -135,6 +135,9 @@ async function loadSheetRowsWithFallback(sheetName) {
   try {
     return await loadSheetRows(sheetName);
   } catch (error) {
+    if (window.location.protocol !== "file:") {
+      throw error;
+    }
     const csv = window.LOCAL_SHEET_CSV?.[sheetName];
     if (!csv) {
       throw error;
