@@ -74,7 +74,8 @@ function sheetUrl(sheetName) {
     "2627": "0",
     Validasi: "822697872",
   };
-  return `${BASE_URL}?gid=${gids[sheetName]}&cacheBust=${Date.now()}`;
+  const cacheBust = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  return `${BASE_URL}?gid=${gids[sheetName]}&tq=${encodeURIComponent("select *")}&cacheBust=${cacheBust}`;
 }
 
 function tableToRows(table) {
@@ -135,9 +136,6 @@ async function loadSheetRowsWithFallback(sheetName) {
   try {
     return await loadSheetRows(sheetName);
   } catch (error) {
-    if (window.location.protocol !== "file:") {
-      throw error;
-    }
     const csv = window.LOCAL_SHEET_CSV?.[sheetName];
     if (!csv) {
       throw error;
