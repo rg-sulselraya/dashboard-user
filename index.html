@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Monitoring Growth User</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Dashboard Monitoring</p>
+          <h1>Growth User</h1>
+          <p id="subtitle" class="muted">Live dari Google Sheet</p>
+        </div>
+        <div class="status">
+          <span id="syncDot" class="dot"></span>
+          <span id="syncText">Mengambil data...</span>
+        </div>
+      </header>
+
+      <section class="filters" aria-label="Filter dashboard">
+        <label>
+          <span>Nama branch</span>
+          <select id="branchSelect"></select>
+        </label>
+        <div class="view-control">
+          <span>Pilih tampilan</span>
+          <div class="view-tabs" aria-label="Pilih tampilan growth">
+            <button class="view-tab active" data-view="branch" type="button">Branch</button>
+            <button class="view-tab" data-view="makassar" type="button">Makassar Raya</button>
+            <button class="view-tab" data-view="sulsel" type="button">Sulawesi Selatan</button>
+          </div>
+        </div>
+        <label>
+          <span>Level</span>
+          <select id="levelSelect">
+            <option value="all">Semua Level</option>
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA">SMA</option>
+          </select>
+        </label>
+        <button id="refreshBtn" class="refresh" type="button">Refresh</button>
+      </section>
+
+      <section class="summary-grid" aria-label="Dashboard jumlah user">
+        <article id="branchCard" class="summary-card selected" data-view="branch" role="button" tabindex="0">
+          <span id="branchLabel">Branch</span>
+          <strong id="branchUsers">-</strong>
+          <small id="branchMeta">Target - | Achievement -</small>
+        </article>
+        <article id="makassarCard" class="summary-card" data-view="makassar" role="button" tabindex="0">
+          <span>Makassar Raya</span>
+          <strong id="makassarUsers">-</strong>
+          <small id="makassarMeta">Target - | Achievement -</small>
+        </article>
+        <article id="sulselCard" class="summary-card" data-view="sulsel" role="button" tabindex="0">
+          <span>Sulawesi Selatan</span>
+          <strong id="sulselUsers">-</strong>
+          <small id="sulselMeta">Target - | Achievement -</small>
+        </article>
+      </section>
+
+      <nav class="mode-tabs" aria-label="Menu dashboard">
+        <button class="mode-tab active" data-mode="grade" type="button">User per Grade</button>
+        <button class="mode-tab" data-mode="school" type="button">User per Sekolah</button>
+      </nav>
+
+      <section class="dashboard-grid">
+        <section class="panel user-growth-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="mainGrowthTitle">User per Grade</h2>
+              <p id="branchTableCaption" class="muted">Branch terpilih</p>
+            </div>
+          </div>
+          <section class="level-strip" aria-label="Komposisi ringkas jenjang">
+            <article>
+              <span>SD</span>
+              <strong id="sdUsers">-</strong>
+              <small id="sdMeta">Target - | Achievement - | Growth -</small>
+            </article>
+            <article>
+              <span>SMP</span>
+              <strong id="smpUsers">-</strong>
+              <small id="smpMeta">Target - | Achievement - | Growth -</small>
+            </article>
+            <article>
+              <span>SMA</span>
+              <strong id="smaUsers">-</strong>
+              <small id="smaMeta">Target - | Achievement - | Growth -</small>
+            </article>
+          </section>
+          <div class="table-wrap compact">
+            <table>
+              <thead>
+                <tr>
+                  <th id="mainDimensionHeader">GRADE</th>
+                  <th><span class="th-title">Total User</span><span class="th-sub">25/26</span></th>
+                  <th><span class="th-title">User YTD</span><span class="th-sub">25/26</span></th>
+                  <th><span class="th-title">User YTD</span><span class="th-sub">26/27</span></th>
+                  <th><span class="th-title">Growth</span><span class="th-sub">YTD 25/26 vs 26/27</span></th>
+                  <th><span class="th-title">Target</span><span class="th-sub">26/27</span></th>
+                  <th><span class="th-title">Achievement</span><span class="th-sub">Realisasi vs Target</span></th>
+                </tr>
+              </thead>
+              <tbody id="branchGradeRows"></tbody>
+            </table>
+          </div>
+          <section id="gradeSchoolBreakdown" class="grade-school-breakdown" hidden></section>
+        </section>
+
+      </section>
+    </main>
+
+    <script src="./local-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
