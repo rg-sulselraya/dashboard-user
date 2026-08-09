@@ -703,7 +703,12 @@ function renderMainTable(rows) {
       const label = activeMode === "school" ? row.name : row.grade;
       const achievement = achievementRatio(row.current, row.target);
       const clickable = activeMode === "school" ? "school-row" : "";
-      const selected = activeMode === "school" && row.name === selectedSchool ? "selected-row" : "";
+      const selected =
+        activeMode === "school" && row.name === selectedSchool
+          ? "selected-row"
+          : activeMode === "grade" && selectedGradeBreakdown?.grade === row.grade
+            ? "selected-breakdown-row"
+            : "";
       const dataSchool = activeMode === "school" ? ` data-school="${escapeHtml(row.name)}"` : "";
       const gradeData =
         activeMode === "grade"
@@ -735,9 +740,9 @@ function renderMainTable(rows) {
       return `
         <tr class="${clickable} ${selected}"${dataSchool}${gradeData}>
           <td>${label}</td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previousTotal">${numberText(row.previousTotal)}</td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previous">${numberText(row.previous)}</td>
-          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="current">${numberText(row.current)}</td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previousTotal"><span class="breakdown-pill">${numberText(row.previousTotal)}</span></td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="previous"><span class="breakdown-pill">${numberText(row.previous)}</span></td>
+          <td class="${activeMode === "grade" ? "breakdown-trigger" : ""}" data-metric="current"><span class="breakdown-pill">${numberText(row.current)}</span></td>
           <td class="${trendClass(row.growth)}">${row.growth}</td>
           <td>${numberText(row.target)}</td>
           <td><span class="${achievementClass(achievement)}"${achievementStyle(achievement)}>${achievementText(row.current, row.target)}</span></td>
@@ -1080,7 +1085,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
       grade: row.dataset.grade,
       metric: cell.dataset.metric,
     };
-    renderGradeSchoolBreakdown();
+    render();
     byId("gradeSchoolBreakdown").scrollIntoView({ behavior: "smooth", block: "nearest" });
     return;
   }

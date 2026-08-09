@@ -750,9 +750,33 @@ tbody tr:hover {
   cursor: pointer;
 }
 
+.breakdown-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 26px;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
 .breakdown-trigger:hover {
-  background: #e4f7fb;
-  color: var(--rg-blue-dark);
+  color: var(--rg-orange);
+}
+
+.breakdown-trigger:hover .breakdown-pill {
+  background: #fff0e4;
+  color: var(--rg-orange);
+}
+
+.selected-breakdown-row td:first-child,
+.selected-breakdown-row .breakdown-trigger {
+  color: var(--rg-orange);
+}
+
+.selected-breakdown-row .breakdown-pill {
+  background: #fff0e4;
+  color: var(--rg-orange);
 }
 
 .grade-school-breakdown {
