@@ -39,6 +39,7 @@ let activeMode = "grade";
 let selectedSchool = null;
 let gradeChart;
 let selectedGradeBreakdown = null;
+let selectedSchoolGradeBranchBreakdown = null;
 let schoolSearchQuery = "";
 
 const byId = (id) => document.getElementById(id);
@@ -345,6 +346,14 @@ function branchRegion(branch) {
   return clean(validationRows.find((row) => clean(row[0]) === branch)?.[2]);
 }
 
+function normalizeSchoolName(value) {
+  return clean(value)
+    .toUpperCase()
+    .replace(/[.,]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function inScope(record, scope) {
   if (scope.type === "branch") return record.branch === scope.value;
   return record.regional === scope.value;
@@ -354,7 +363,7 @@ function countUsers(records, scope, filter = {}) {
   return records.filter((record) => {
     if (!inScope(record, scope)) return false;
     if (filter.grade && record.grade !== filter.grade) return false;
-    if (filter.school && record.school !== filter.school) return false;
+    if (filter.school && normalizeSchoolName(record.school) !== normalizeSchoolName(filter.school)) return false;
     if (filter.limitDate && (!record.paidDate || record.paidDate > filter.limitDate)) return false;
     return true;
   }).length;
@@ -398,7 +407,11 @@ function targetSchoolsForScope(scope) {
           ? branch === scope.value
           : users2526
               .concat(users2627)
-              .some((record) => record.regional === scope.value && record.school === school);
+              .some(
+                (record) =>
+                  record.regional === scope.value &&
+                  normalizeSchoolName(record.school) === normalizeSchoolName(school),
+              );
 
       if (!matches) return;
       const item = schools.get(school) || { name: school, level, target: 0 };
@@ -623,6 +636,115 @@ function breakdownMetricLabel(metric) {
   return "User YTD 26/27";
 }
 
+function branchContributorsForSchoolGrade(schoolName, grade) {
+  const scope = activeScope();
+  const totals = new Map();
+  users2627.forEach((record) => {
+    if (!inScope(record, scope)) return;
+    if (normalizeSchoolName(record.school) !== normalizeSchoolName(schoolName)) return;
+    if (record.grade !== grade) return;
+    if (record.paidDate && record.paidDate > TODAY) return;
+    const branch = record.branch || "Tanpa Nama Branch";
+    totals.set(branch, (totals.get(branch) || 0) + 1);
+  });
+  return [...totals.entries()]
+    .map(([branch, total]) => ({ branch, total }))
+    .sort((a, b) => b.total - a.total || a.branch.localeCompare(b.branch, "id-ID"));
+}
+
+function branchBreakdownInlineRow(schoolName, grade) {
+  const rows = branchContributorsForSchoolGrade(schoolName, grade);
+  return `
+    <tr class="inline-branch-breakdown">
+      <td colspan="7">
+        <div class="inline-branch-card">
+          <div class="inline-branch-head">
+            <div>
+              <strong>${grade}</strong>
+              <span>User 26/27 per cabang</span>
+            </div>
+            <button class="close-inline-branch-breakdown" type="button">Tutup</button>
+          </div>
+          <table class="inline-branch-table">
+            <thead>
+              <tr>
+                <th>Nama Branch</th>
+                <th>User 26/27</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                rows.length
+                  ? rows
+                      .map(
+                        (row) => `
+                          <tr>
+                            <td>${escapeHtml(row.branch)}</td>
+                            <td>${numberText(row.total)}</td>
+                          </tr>
+                        `,
+                      )
+                      .join("")
+                  : `<tr><td colspan="2">Tidak ada data branch</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function renderSchoolGradeBranchBreakdown() {
+  const panel = byId("gradeSchoolBreakdown");
+  if (!selectedSchoolGradeBranchBreakdown) return false;
+  const rows = branchContributorsForSchoolGrade(
+    selectedSchoolGradeBranchBreakdown.school,
+    selectedSchoolGradeBranchBreakdown.grade,
+  );
+  panel.hidden = false;
+  panel.innerHTML = `
+    <div class="breakdown-head">
+      <div>
+        <h3>${selectedSchoolGradeBranchBreakdown.school}</h3>
+        <p>${selectedSchoolGradeBranchBreakdown.grade} - User 26/27 per cabang</p>
+      </div>
+      <button id="closeBreakdown" type="button">Tutup</button>
+    </div>
+    <div class="table-wrap compact">
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Nama Branch</th>
+            <th>User 26/27</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows
+                  .map(
+                    (row) => `
+                      <tr>
+                        <td>${escapeHtml(row.branch)}</td>
+                        <td>${numberText(row.total)}</td>
+                      </tr>
+                    `,
+                  )
+                  .join("")
+              : `<tr><td colspan="2">Tidak ada data branch</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  `;
+  byId("closeBreakdown").addEventListener("click", () => {
+    selectedSchoolGradeBranchBreakdown = null;
+    renderGradeSchoolBreakdown();
+  });
+  return true;
+}
+
 function renderBranchOptions() {
   const options = branchList();
   byId("branchSelect").innerHTML = options
@@ -732,7 +854,7 @@ function renderMainTable(rows) {
                 (gradeRow) => {
                   const gradeGrowth = growthLabel(gradeRow.previous, gradeRow.current);
                   return `
-                    <tr class="grade-detail-row">
+                    <tr class="grade-detail-row grade-branch-trigger ${selectedSchoolGradeBranchBreakdown?.school === row.name && selectedSchoolGradeBranchBreakdown?.grade === gradeRow.grade ? "selected-grade-branch-row" : ""}" data-school="${escapeHtml(row.name)}" data-grade="${escapeHtml(gradeRow.grade)}">
                       <td>${gradeRow.grade}</td>
                       <td>${numberText(gradeRow.previousTotal)}</td>
                       <td>${numberText(gradeRow.previous)}</td>
@@ -741,6 +863,12 @@ function renderMainTable(rows) {
                       <td></td>
                       <td></td>
                     </tr>
+                    ${
+                      selectedSchoolGradeBranchBreakdown?.school === row.name &&
+                      selectedSchoolGradeBranchBreakdown?.grade === gradeRow.grade
+                        ? branchBreakdownInlineRow(row.name, gradeRow.grade)
+                        : ""
+                    }
                   `;
                 },
               )
@@ -1074,10 +1202,12 @@ byId("branchSelect").addEventListener("change", (event) => {
   activeView = "branch";
   selectedSchool = null;
   selectedGradeBreakdown = null;
+  selectedSchoolGradeBranchBreakdown = null;
   render();
 });
 byId("levelSelect").addEventListener("change", () => {
   selectedGradeBreakdown = null;
+  selectedSchoolGradeBranchBreakdown = null;
   render();
 });
 byId("refreshBtn").addEventListener("click", loadSheet);
@@ -1099,12 +1229,35 @@ document.querySelectorAll(".mode-tab").forEach((button) => {
     activeMode = button.dataset.mode;
     selectedSchool = null;
     selectedGradeBreakdown = null;
+    selectedSchoolGradeBranchBreakdown = null;
     schoolSearchQuery = "";
     render();
   });
 });
 
 byId("branchGradeRows").addEventListener("click", (event) => {
+  if (event.target.closest(".close-inline-branch-breakdown")) {
+    selectedSchoolGradeBranchBreakdown = null;
+    render();
+    return;
+  }
+
+  const gradeDetail = event.target.closest(".grade-branch-trigger");
+  if (activeMode === "school" && gradeDetail && activeView !== "branch") {
+    const sameSelection =
+      selectedSchoolGradeBranchBreakdown?.school === gradeDetail.dataset.school &&
+      selectedSchoolGradeBranchBreakdown?.grade === gradeDetail.dataset.grade;
+    selectedSchoolGradeBranchBreakdown = sameSelection
+      ? null
+      : {
+          school: gradeDetail.dataset.school,
+          grade: gradeDetail.dataset.grade,
+        };
+    selectedGradeBreakdown = null;
+    render();
+    return;
+  }
+
   const cell = event.target.closest(".breakdown-trigger");
   if (activeMode === "grade" && cell) {
     const row = cell.closest("tr");
@@ -1112,6 +1265,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
       grade: row.dataset.grade,
       metric: cell.dataset.metric,
     };
+    selectedSchoolGradeBranchBreakdown = null;
     render();
     byId("gradeSchoolBreakdown").scrollIntoView({ behavior: "smooth", block: "nearest" });
     return;
@@ -1120,6 +1274,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
   const row = event.target.closest(".school-row");
   if (!row) return;
   selectedSchool = selectedSchool === row.dataset.school ? null : row.dataset.school;
+  selectedSchoolGradeBranchBreakdown = null;
   render();
 });
 
@@ -1128,6 +1283,7 @@ document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
     activeView = card.dataset.view;
     selectedSchool = null;
     selectedGradeBreakdown = null;
+    selectedSchoolGradeBranchBreakdown = null;
     render();
   };
   card.addEventListener("click", activate);
@@ -1144,6 +1300,7 @@ document.querySelectorAll(".view-tab").forEach((button) => {
     activeView = button.dataset.view;
     selectedSchool = null;
     selectedGradeBreakdown = null;
+    selectedSchoolGradeBranchBreakdown = null;
     render();
   });
 });

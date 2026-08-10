@@ -404,7 +404,87 @@ select {
   line-height: 1.35;
 }
 
-.summary-card small .trend-up {
+.summary-card small 
+.selected-grade-branch-row td {
+  background: #fff7ed;
+}
+
+.selected-grade-branch-row td:first-child {
+  color: var(--rg-orange);
+}
+
+.inline-branch-breakdown td {
+  background: #fffaf4;
+  padding: 12px 18px 14px 58px;
+}
+
+.inline-branch-card {
+  border: 1px solid #ffd2ad;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(255, 122, 26, 0.1);
+}
+
+.inline-branch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fff0e4;
+}
+
+.inline-branch-head strong,
+.inline-branch-head span {
+  display: block;
+}
+
+.inline-branch-head strong {
+  color: var(--rg-orange);
+  font-size: 13px;
+}
+
+.inline-branch-head span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.inline-branch-head button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: var(--rg-orange);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.inline-branch-table {
+  min-width: 0;
+}
+
+.inline-branch-table th,
+.inline-branch-table td {
+  padding: 8px 12px;
+}
+
+.inline-branch-table th {
+  background: #fff8f1;
+  color: #9a4600;
+  border-bottom-color: #ffd2ad;
+}
+
+.inline-branch-table td:last-child {
+  width: 140px;
+  color: var(--rg-orange);
+  font-weight: 900;
+}
+
+.trend-up {
   color: var(--rg-green);
 }
 
@@ -820,6 +900,18 @@ tbody tr:hover {
 
 .grade-detail-row td:nth-child(n + 6) {
   color: transparent;
+}
+
+.grade-branch-trigger {
+  cursor: pointer;
+}
+
+.grade-branch-trigger:hover td {
+  background: #fff7ed;
+}
+
+.grade-branch-trigger:hover td:first-child {
+  color: var(--rg-orange);
 }
 
 .trend-up {
