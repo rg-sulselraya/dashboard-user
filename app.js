@@ -847,11 +847,11 @@ function renderSummary() {
   const smp = sumRows(viewGrades, "SMP");
   const sma = sumRows(viewGrades, "SMA");
   byId("sdUsers").textContent = numberText(sd.current);
-  byId("sdMeta").innerHTML = `Target ${numberText(sd.target)} | Achievement ${percentText(sd.achievement)} | Growth <span class="${trendClass(sd.growth)}">${sd.growth}</span>`;
+  byId("sdMeta").innerHTML = `Target ${numberText(sd.target)} | Achievement <span class="level-achievement"${achievementStyle(sd.achievement)}>${percentText(sd.achievement)}</span> | 25/26 YTD ${numberText(sd.previous)} | Growth <span class="${trendClass(sd.growth)}">${sd.growth}</span>`;
   byId("smpUsers").textContent = numberText(smp.current);
-  byId("smpMeta").innerHTML = `Target ${numberText(smp.target)} | Achievement ${percentText(smp.achievement)} | Growth <span class="${trendClass(smp.growth)}">${smp.growth}</span>`;
+  byId("smpMeta").innerHTML = `Target ${numberText(smp.target)} | Achievement <span class="level-achievement"${achievementStyle(smp.achievement)}>${percentText(smp.achievement)}</span> | 25/26 YTD ${numberText(smp.previous)} | Growth <span class="${trendClass(smp.growth)}">${smp.growth}</span>`;
   byId("smaUsers").textContent = numberText(sma.current);
-  byId("smaMeta").innerHTML = `Target ${numberText(sma.target)} | Achievement ${percentText(sma.achievement)} | Growth <span class="${trendClass(sma.growth)}">${sma.growth}</span>`;
+  byId("smaMeta").innerHTML = `Target ${numberText(sma.target)} | Achievement <span class="level-achievement"${achievementStyle(sma.achievement)}>${percentText(sma.achievement)}</span> | 25/26 YTD ${numberText(sma.previous)} | Growth <span class="${trendClass(sma.growth)}">${sma.growth}</span>`;
 
   document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
     card.classList.toggle("selected", card.dataset.view === activeView);

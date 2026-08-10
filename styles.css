@@ -625,6 +625,36 @@ select {
   line-height: 1.4;
 }
 
+.level-achievement {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 22px;
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: var(--achievement-bg);
+  color: var(--achievement-color);
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
+.level-strip .level-achievement {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 22px;
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: var(--achievement-bg) !important;
+  color: var(--achievement-color) !important;
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
 .level-strip small .trend-up {
   color: var(--rg-green);
 }
