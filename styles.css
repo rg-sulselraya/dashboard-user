@@ -639,6 +639,27 @@ select {
   color: white;
 }
 
+.branch-access .view-tab:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.branch-access .summary-grid {
+  grid-template-columns: 1fr;
+}
+
+.branch-access .summary-card:not([data-view="branch"]) {
+  display: none;
+}
+
+.branch-access #branchSelect {
+  background: #eef6f9;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+
 .panel-head .muted {
   color: rgba(255, 255, 255, 0.82);
 }

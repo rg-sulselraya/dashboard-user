@@ -44,25 +44,56 @@ let schoolSearchQuery = "";
 
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
-const DASHBOARD_PASSWORD = "rgsulselraya";
+const ACCESS_KEYS = {
+  "SulselRaya-7392": { type: "all" },
+  "Bone-4827": { type: "branch", value: "Bone - Ahmad Yani" },
+  "Bulukumba-9154": { type: "branch", value: "Bulukumba - Jend. Sudirman" },
+  "Gowa-3068": { type: "branch", value: "Gowa - Sungguminasa" },
+  "Baruga-6741": { type: "branch", value: "Makassar - Baruga" },
+  "Cendrawasih-8295": { type: "branch", value: "Makassar - Cendrawasih" },
+  "Hertasning-1438": { type: "branch", value: "Makassar - Hertasning" },
+  "Perintis-5602": { type: "branch", value: "Makassar - Perintis" },
+  "Sudiang-7816": { type: "branch", value: "Makassar - Sudiang" },
+  "Palopo-2497": { type: "branch", value: "Palopo - Andi Kambo" },
+  "Pangkep-6380": { type: "branch", value: "Pangkep - Sultan Hasanuddin" },
+  "Parepare-4073": { type: "branch", value: "Parepare - Mattirotasi" },
+  "Pinrang-8521": { type: "branch", value: "Pinrang - Jend. Sudirman" },
+  "Sidrap-1946": { type: "branch", value: "Sidrap - Jenderal Sudirman" },
+  "Soppeng-7259": { type: "branch", value: "Soppeng - Lalabata" },
+  "Toraja-3184": { type: "branch", value: "Tana Toraja - Makale" },
+  "Torut-9062": { type: "branch", value: "Toraja Utara - Poros Bolu" },
+  "Wajo-5713": { type: "branch", value: "Wajo - Jend. Sudirman" },
+};
+let currentAccess = null;
 
-function unlockDashboard() {
+function applyAccess(key) {
+  const normalizedKey = clean(key).toLowerCase();
+  const canonicalKey = Object.keys(ACCESS_KEYS).find(
+    (accessKey) => accessKey.toLowerCase() === normalizedKey,
+  );
+  if (!canonicalKey) return false;
+  const access = ACCESS_KEYS[canonicalKey];
+  currentAccess = access;
+  if (access.type === "branch") {
+    activeBranch = access.value;
+    activeView = "branch";
+  }
   document.body.classList.remove("locked");
-  sessionStorage.setItem("dashboardUnlocked", "true");
+  sessionStorage.setItem("dashboardAccessKey", canonicalKey);
+  render();
+  return true;
 }
 
 function setupPasswordGate() {
   const form = byId("passwordForm");
   const input = byId("passwordInput");
   const error = byId("passwordError");
-  if (sessionStorage.getItem("dashboardUnlocked") === "true") {
-    unlockDashboard();
-    return;
-  }
+  const savedKey = sessionStorage.getItem("dashboardAccessKey");
+  if (savedKey && applyAccess(savedKey)) return;
+  sessionStorage.removeItem("dashboardAccessKey");
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (input.value === DASHBOARD_PASSWORD) {
-      unlockDashboard();
+    if (applyAccess(input.value.trim())) {
       error.hidden = true;
       return;
     }
@@ -746,13 +777,15 @@ function renderSchoolGradeBranchBreakdown() {
 }
 
 function renderBranchOptions() {
-  const options = branchList();
-  byId("branchSelect").innerHTML = options
+  const options = currentAccess?.type === "branch" ? [currentAccess.value] : branchList();
+  const branchSelect = byId("branchSelect");
+  branchSelect.innerHTML = options
     .map(
       (branch) =>
         `<option value="${branch}" ${branch === activeBranch ? "selected" : ""}>${branch}</option>`,
     )
     .join("");
+  branchSelect.disabled = currentAccess?.type === "branch";
 }
 
 function renderSummary() {
@@ -1153,6 +1186,18 @@ function render() {
   byId("mainGrowthTitle").textContent = `${activeMode === "school" ? "User per Sekolah" : "User per Grade"} - ${activeTitle()}`;
   byId("mainDimensionHeader").textContent = activeMode === "school" ? "SEKOLAH" : "GRADE";
   byId("branchTableCaption").textContent = activeTitle();
+  const branchOnly = currentAccess?.type === "branch";
+  document.body.classList.toggle("branch-access", branchOnly);
+  if (branchOnly) {
+    activeView = "branch";
+    document.querySelectorAll('.view-tab').forEach((button) => {
+      button.disabled = button.dataset.view !== "branch";
+    });
+  } else {
+    document.querySelectorAll('.view-tab').forEach((button) => {
+      button.disabled = false;
+    });
+  }
   schoolSearchBar.hidden = activeMode !== "school";
   schoolSearchInput.value = schoolSearchQuery;
   renderSummary();
@@ -1198,6 +1243,7 @@ async function loadSheet() {
 }
 
 byId("branchSelect").addEventListener("change", (event) => {
+  if (currentAccess?.type === "branch") return;
   activeBranch = event.target.value;
   activeView = "branch";
   selectedSchool = null;
@@ -1280,6 +1326,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
 
 document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
   const activate = () => {
+    if (currentAccess?.type === "branch" && card.dataset.view !== "branch") return;
     activeView = card.dataset.view;
     selectedSchool = null;
     selectedGradeBreakdown = null;
@@ -1297,6 +1344,7 @@ document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
 
 document.querySelectorAll(".view-tab").forEach((button) => {
   button.addEventListener("click", () => {
+    if (currentAccess?.type === "branch" && button.dataset.view !== "branch") return;
     activeView = button.dataset.view;
     selectedSchool = null;
     selectedGradeBreakdown = null;
