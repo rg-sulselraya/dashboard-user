@@ -354,6 +354,71 @@ select {
     box-shadow 160ms ease;
 }
 
+
+.branch-metrics-card {
+  cursor: default;
+  min-height: 0;
+  padding: 18px 20px 20px;
+  background: #ffffff;
+}
+
+.branch-metrics-card::before {
+  width: 6px;
+  background: var(--rg-teal);
+}
+
+.branch-metrics-head {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5eff3;
+}
+
+.branch-metrics-head span {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.branch-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.branch-metric-item {
+  min-height: 92px;
+  border: 1px solid #dbeaf0;
+  border-radius: 8px;
+  padding: 14px 14px 12px;
+  background: #f8fcfd;
+}
+
+.branch-metric-item.primary {
+  border-color: #9edbe7;
+  background: #eaf8fb;
+}
+
+.branch-metric-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.branch-metric-item strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.branch-metric-item.achievement-metric strong {
+  color: var(--rg-orange);
+}
+
 .summary-card::before {
   content: "";
   position: absolute;

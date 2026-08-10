@@ -45,7 +45,7 @@ let schoolSearchQuery = "";
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
 const ACCESS_KEYS = {
-  "SulselRaya-7392": { type: "all" },
+  "rmsulselraya": { type: "all" },
   "Bone-4827": { type: "branch", value: "Bone - Ahmad Yani" },
   "Bulukumba-9154": { type: "branch", value: "Bulukumba - Jend. Sudirman" },
   "Gowa-3068": { type: "branch", value: "Gowa - Sungguminasa" },
@@ -798,9 +798,47 @@ function renderSummary() {
   const makassar = summaryFromSheet(makassarScope, level);
   const sulsel = summaryFromSheet(sulselScope, level);
 
-  byId("branchLabel").textContent = activeBranch;
-  byId("branchUsers").textContent = numberText(branch.current);
-  byId("branchMeta").innerHTML = `25/26 YTD ${numberText(branch.previous)} | Target ${numberText(branch.target)} | Achievement ${percentText(branch.achievement)} | Growth <span class="${trendClass(branch.growth)}">${branch.growth}</span>`;
+  const branchCard = byId("branchCard");
+  if (currentAccess?.type === "branch") {
+    branchCard.classList.add("branch-metrics-card");
+    branchCard.innerHTML = `
+      <div class="branch-metrics-head">
+        <span>${activeBranch}</span>
+      </div>
+      <div class="branch-metrics-grid">
+        <div class="branch-metric-item primary">
+          <span>26/27 YTD</span>
+          <strong>${numberText(branch.current)}</strong>
+        </div>
+        <div class="branch-metric-item">
+          <span>25/26 YTD</span>
+          <strong>${numberText(branch.previous)}</strong>
+        </div>
+        <div class="branch-metric-item">
+          <span>Growth</span>
+          <strong class="${trendClass(branch.growth)}">${branch.growth}</strong>
+        </div>
+        <div class="branch-metric-item">
+          <span>Target</span>
+          <strong>${numberText(branch.target)}</strong>
+        </div>
+        <div class="branch-metric-item achievement-metric">
+          <span>Achievement</span>
+          <strong>${percentText(branch.achievement)}</strong>
+        </div>
+      </div>
+    `;
+  } else {
+    branchCard.classList.remove("branch-metrics-card");
+    branchCard.innerHTML = `
+      <span id="branchLabel">Branch</span>
+      <strong id="branchUsers">-</strong>
+      <small id="branchMeta">Target - | Achievement -</small>
+    `;
+    byId("branchLabel").textContent = activeBranch;
+    byId("branchUsers").textContent = numberText(branch.current);
+    byId("branchMeta").innerHTML = `25/26 YTD ${numberText(branch.previous)} | Target ${numberText(branch.target)} | Achievement ${percentText(branch.achievement)} | Growth <span class="${trendClass(branch.growth)}">${branch.growth}</span>`;
+  }
   byId("makassarUsers").textContent = numberText(makassar.current);
   byId("makassarMeta").innerHTML = `25/26 YTD ${numberText(makassar.previous)} | Target ${numberText(makassar.target)} | Achievement ${percentText(makassar.achievement)} | Growth <span class="${trendClass(makassar.growth)}">${makassar.growth}</span>`;
   byId("sulselUsers").textContent = numberText(sulsel.current);
