@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Monitoring User Regional SulselRaya</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20260811-level-achievement" />
+    <link rel="stylesheet" href="./styles.css?v=20260811-larger-rg-logo" />
   </head>
   <body class="locked">
     <section id="passwordGate" class="password-gate" aria-label="Masuk dashboard">
@@ -23,23 +23,29 @@
     <main class="shell">
       <div class="sticky-dashboard-head">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">Dashboard Monitoring</p>
-            <h1>User Regional SulselRaya</h1>
-            <p id="subtitle" class="muted">Live dari Google Sheet</p>
+          <div class="brand-title">
+            <img class="rg-logo" src="./ruangguru-logo.svg" alt="Ruangguru" />
+            <div>
+              <p class="eyebrow">Dashboard Monitoring</p>
+              <h1>User Regional SulselRaya</h1>
+              <p id="subtitle" class="muted">Live dari Google Sheet</p>
+            </div>
           </div>
-          <div class="status">
-            <span id="syncDot" class="dot"></span>
-            <span id="syncText">Mengambil data...</span>
+          <div class="topbar-actions">
+            <div class="status">
+              <span id="syncDot" class="dot"></span>
+              <span id="syncText">Mengambil data...</span>
+            </div>
+            <button id="refreshBtn" class="refresh" type="button">Refresh data</button>
           </div>
         </header>
 
         <section class="filters" aria-label="Filter dashboard">
-          <label>
+          <label class="filter-field branch-field">
             <span>Nama branch</span>
             <select id="branchSelect"></select>
           </label>
-          <div class="view-control">
+          <div class="view-control filter-field">
             <span>Pilih tampilan</span>
             <div class="view-tabs" aria-label="Pilih tampilan growth">
               <button class="view-tab active" data-view="branch" type="button">Branch</button>
@@ -47,7 +53,7 @@
               <button class="view-tab" data-view="sulsel" type="button">Sulawesi Selatan</button>
             </div>
           </div>
-          <label>
+          <label class="filter-field level-field">
             <span>Level</span>
             <select id="levelSelect">
               <option value="all">Semua Level</option>
@@ -56,23 +62,22 @@
               <option value="SMA">SMA</option>
             </select>
           </label>
-          <button id="refreshBtn" class="refresh" type="button">Refresh</button>
         </section>
       </div>
 
       <section class="summary-grid" aria-label="Dashboard jumlah user">
         <article id="branchCard" class="summary-card selected" data-view="branch" role="button" tabindex="0">
-          <span id="branchLabel">Branch</span>
+          <span id="branchLabel" class="summary-title">Branch</span>
           <strong id="branchUsers">-</strong>
           <small id="branchMeta">Target - | Achievement -</small>
         </article>
         <article id="makassarCard" class="summary-card" data-view="makassar" role="button" tabindex="0">
-          <span>Makassar Raya</span>
+          <span class="summary-title">Makassar Raya</span>
           <strong id="makassarUsers">-</strong>
           <small id="makassarMeta">Target - | Achievement -</small>
         </article>
         <article id="sulselCard" class="summary-card" data-view="sulsel" role="button" tabindex="0">
-          <span>Sulawesi Selatan</span>
+          <span class="summary-title">Sulawesi Selatan</span>
           <strong id="sulselUsers">-</strong>
           <small id="sulselMeta">Target - | Achievement -</small>
         </article>
@@ -137,7 +142,7 @@
       </section>
     </main>
 
-    <script src="./local-data.js?v=20260811-level-achievement"></script>
-    <script src="./app.js?v=20260811-level-achievement"></script>
+    <script src="./local-data.js?v=20260811-ruangguru-stack-logo"></script>
+    <script src="./app.js?v=20260811-ruangguru-stack-logo"></script>
   </body>
 </html>

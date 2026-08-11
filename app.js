@@ -190,6 +190,26 @@ async function loadSheetsFromAppsScript() {
   }
   return payload;
 }
+async function loadAllSheets() {
+  try {
+    return await loadSheetsFromAppsScript();
+  } catch (error) {
+    const localSheets = window.LOCAL_SHEET_CSV;
+    if (!localSheets?.["2526"] || !localSheets?.["2627"] || !localSheets?.Validasi) {
+      throw error;
+    }
+    window.USING_LOCAL_DATA = true;
+    return {
+      sheets: {
+        "2526": parseCSV(localSheets["2526"]),
+        "2627": parseCSV(localSheets["2627"]),
+        Validasi: parseCSV(localSheets.Validasi),
+      },
+      updatedAt: window.LOCAL_SHEET_UPDATED_AT,
+      source: "local",
+    };
+  }
+}
 
 function parseCSV(text) {
   const rows = [];
@@ -797,52 +817,66 @@ function renderSummary() {
   const branch = summaryFromSheet(branchScope, level);
   const makassar = summaryFromSheet(makassarScope, level);
   const sulsel = summaryFromSheet(sulselScope, level);
+  const summaryRows = {
+    branch: { title: activeBranch, data: branch },
+    makassar: { title: "Makassar Raya", data: makassar },
+    sulsel: { title: "Sulawesi Selatan", data: sulsel },
+  };
+  const renderSummaryMeta = (row) =>
+    `25/26 YTD ${numberText(row.previous)} | Target ${numberText(row.target)} | Achievement ${percentText(row.achievement)} | Growth <span class="${trendClass(row.growth)}">${row.growth}</span>`;
+  const renderCompactPanel = (key, title, row) => {
+    const card = byId(`${key}Card`);
+    card.hidden = false;
+    card.classList.remove("branch-metrics-card", "active-metrics-card");
+    card.innerHTML = `
+      <span ${key === "branch" ? 'id="branchLabel" ' : ""}class="summary-title">${title}</span>
+      <strong id="${key}Users">${numberText(row.current)}</strong>
+      <small id="${key}Meta">${renderSummaryMeta(row)}</small>
+    `;
+  };
+  const renderMetricsPanel = (title, row) => `
+    <div class="branch-metrics-head">
+      <span>${title}</span>
+    </div>
+    <div class="branch-metrics-grid">
+      <div class="branch-metric-item primary">
+        <span>26/27 YTD</span>
+        <strong>${numberText(row.current)}</strong>
+      </div>
+      <div class="branch-metric-item">
+        <span>25/26 YTD</span>
+        <strong>${numberText(row.previous)}</strong>
+      </div>
+      <div class="branch-metric-item">
+        <span>Growth</span>
+        <strong class="${trendClass(row.growth)}">${row.growth}</strong>
+      </div>
+      <div class="branch-metric-item">
+        <span>Target</span>
+        <strong>${numberText(row.target)}</strong>
+      </div>
+      <div class="branch-metric-item achievement-metric">
+        <span>Achievement</span>
+        <strong>${percentText(row.achievement)}</strong>
+      </div>
+    </div>
+  `;
 
   const branchCard = byId("branchCard");
   if (currentAccess?.type === "branch") {
     branchCard.classList.add("branch-metrics-card");
-    branchCard.innerHTML = `
-      <div class="branch-metrics-head">
-        <span>${activeBranch}</span>
-      </div>
-      <div class="branch-metrics-grid">
-        <div class="branch-metric-item primary">
-          <span>26/27 YTD</span>
-          <strong>${numberText(branch.current)}</strong>
-        </div>
-        <div class="branch-metric-item">
-          <span>25/26 YTD</span>
-          <strong>${numberText(branch.previous)}</strong>
-        </div>
-        <div class="branch-metric-item">
-          <span>Growth</span>
-          <strong class="${trendClass(branch.growth)}">${branch.growth}</strong>
-        </div>
-        <div class="branch-metric-item">
-          <span>Target</span>
-          <strong>${numberText(branch.target)}</strong>
-        </div>
-        <div class="branch-metric-item achievement-metric">
-          <span>Achievement</span>
-          <strong>${percentText(branch.achievement)}</strong>
-        </div>
-      </div>
-    `;
+    branchCard.innerHTML = renderMetricsPanel(activeBranch, branch);
   } else {
-    branchCard.classList.remove("branch-metrics-card");
-    branchCard.innerHTML = `
-      <span id="branchLabel">Branch</span>
-      <strong id="branchUsers">-</strong>
-      <small id="branchMeta">Target - | Achievement -</small>
-    `;
-    byId("branchLabel").textContent = activeBranch;
-    byId("branchUsers").textContent = numberText(branch.current);
-    byId("branchMeta").innerHTML = `25/26 YTD ${numberText(branch.previous)} | Target ${numberText(branch.target)} | Achievement ${percentText(branch.achievement)} | Growth <span class="${trendClass(branch.growth)}">${branch.growth}</span>`;
+    renderCompactPanel("branch", activeBranch, branch);
+    renderCompactPanel("makassar", "Makassar Raya", makassar);
+    renderCompactPanel("sulsel", "Sulawesi Selatan", sulsel);
+    const activeCard = byId(`${activeView}Card`);
+    activeCard.classList.add("branch-metrics-card", "active-metrics-card");
+    activeCard.innerHTML = renderMetricsPanel(summaryRows[activeView].title, summaryRows[activeView].data);
+    document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
+      card.hidden = card.dataset.view !== activeView;
+    });
   }
-  byId("makassarUsers").textContent = numberText(makassar.current);
-  byId("makassarMeta").innerHTML = `25/26 YTD ${numberText(makassar.previous)} | Target ${numberText(makassar.target)} | Achievement ${percentText(makassar.achievement)} | Growth <span class="${trendClass(makassar.growth)}">${makassar.growth}</span>`;
-  byId("sulselUsers").textContent = numberText(sulsel.current);
-  byId("sulselMeta").innerHTML = `25/26 YTD ${numberText(sulsel.previous)} | Target ${numberText(sulsel.target)} | Achievement ${percentText(sulsel.achievement)} | Growth <span class="${trendClass(sulsel.growth)}">${sulsel.growth}</span>`;
   const sd = sumRows(viewGrades, "SD");
   const smp = sumRows(viewGrades, "SMP");
   const sma = sumRows(viewGrades, "SMA");
@@ -1256,7 +1290,7 @@ async function loadSheet() {
   TODAY = startOfToday();
   PREVIOUS_YTD_LIMIT = previousYtdLimit(TODAY);
   try {
-    const payload = await loadSheetsFromAppsScript();
+    const payload = await loadAllSheets();
     const [rows2526, rows2627, rowsValidasi] = [
       payload.sheets["2526"],
       payload.sheets["2627"],
@@ -1269,9 +1303,10 @@ async function loadSheet() {
     if (!branches.includes(activeBranch)) activeBranch = branches[0] || activeBranch;
     renderBranchOptions();
     render();
+    const sourceLabel = payload.source === "local" ? "Data lokal" : "Live Apps Script";
     byId("syncText").textContent = payload.updatedAt
-      ? `Live Apps Script: ${new Date(payload.updatedAt).toLocaleString("id-ID")}`
-      : "Live Apps Script";
+      ? `${sourceLabel}: ${new Date(payload.updatedAt).toLocaleString("id-ID")}`
+      : sourceLabel;
     byId("syncDot").className = "dot ok";
   } catch (error) {
     byId("syncText").textContent = "Gagal membaca Google Sheet";
