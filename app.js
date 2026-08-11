@@ -45,7 +45,7 @@ let schoolSearchQuery = "";
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
 const ACCESS_KEYS = {
-  "rg010425": { type: "all" },
+  "admin123": { type: "all" },
   "Bone-4827": { type: "branch", value: "Bone - Ahmad Yani" },
   "Bulukumba-9154": { type: "branch", value: "Bulukumba - Jend. Sudirman" },
   "Gowa-3068": { type: "branch", value: "Gowa - Sungguminasa" },
