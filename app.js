@@ -41,6 +41,7 @@ let gradeChart;
 let selectedGradeBreakdown = null;
 let selectedSchoolGradeBranchBreakdown = null;
 let schoolSearchQuery = "";
+let schoolSearchRenderTimer;
 
 const byId = (id) => document.getElementById(id);
 const formatter = new Intl.NumberFormat("id-ID");
@@ -246,6 +247,10 @@ function parseCSV(text) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+function normalizeSearchText(value) {
+  return clean(value).toLowerCase().replace(/\s+/g, " ");
 }
 
 function escapeHtml(value) {
@@ -922,10 +927,10 @@ function renderGradeTable(targetId, rows) {
 
 function renderMainTable(rows) {
   const level = byId("levelSelect").value;
-  const query = schoolSearchQuery.toLowerCase();
+  const query = normalizeSearchText(schoolSearchQuery);
   const filtered = rows.filter((row) => {
     if (level !== "all" && row.level !== level) return false;
-    if (activeMode === "school" && query && !row.name.toLowerCase().includes(query)) return false;
+    if (activeMode === "school" && query && !normalizeSearchText(row.name).includes(query)) return false;
     return true;
   });
   if (activeMode === "school" && selectedSchool && !filtered.some((row) => row.name === selectedSchool)) {
@@ -1332,9 +1337,10 @@ byId("levelSelect").addEventListener("change", () => {
 byId("refreshBtn").addEventListener("click", loadSheet);
 
 byId("schoolSearchInput").addEventListener("input", (event) => {
-  schoolSearchQuery = event.target.value.trim();
+  schoolSearchQuery = event.target.value;
   selectedSchool = null;
-  render();
+  window.clearTimeout(schoolSearchRenderTimer);
+  schoolSearchRenderTimer = window.setTimeout(render, 180);
 });
 
 byId("clearSchoolSearch").addEventListener("click", () => {
