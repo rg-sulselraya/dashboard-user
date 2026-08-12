@@ -40,6 +40,7 @@ let selectedSchool = null;
 let gradeChart;
 let selectedGradeBreakdown = null;
 let selectedSchoolGradeBranchBreakdown = null;
+let selectedFuLeadSchool = null;
 let schoolSearchQuery = "";
 let schoolSearchRenderTimer;
 
@@ -410,6 +411,31 @@ function normalizeSchoolName(value) {
     .trim();
 }
 
+const FU_METRICS = ["leads", "Paid", "Hold", "Prospek", "Connect", "No Respon", "Invalid", "utilize"];
+const FU_LABELS = {
+  leads: "Jumlah Leads",
+  Paid: "Paid",
+  Hold: "Hold",
+  Prospek: "Prospect",
+  Connect: "Connected",
+  "No Respon": "No Respon",
+  Invalid: "Invalid",
+  utilize: "%Utilize",
+};
+
+function fuSummaryForSchool(schoolName) {
+  const empty = Object.fromEntries(FU_METRICS.map((metric) => [metric, 0]));
+  return window.LOCAL_FU_SUMMARY?.[normalizeSchoolName(schoolName)] || empty;
+}
+
+function fuUtilize(summary) {
+  const utilized = ["Paid", "Hold", "Prospek", "Connect", "No Respon", "Invalid"].reduce(
+    (total, metric) => total + toNumber(summary[metric]),
+    0,
+  );
+  return summary.leads ? `${Math.round((utilized / summary.leads) * 100)}%` : "-";
+}
+
 function inScope(record, scope) {
   if (scope.type === "branch") return record.branch === scope.value;
   return record.regional === scope.value;
@@ -661,6 +687,78 @@ function schoolGradeDetailRows(schoolName) {
   const rows = selectedSchoolGradeRows();
   selectedSchool = previousSchool;
   return rows;
+}
+
+function fuInlineRow(schoolName) {
+  const summary = fuSummaryForSchool(schoolName);
+  const values = { ...summary, utilize: fuUtilize(summary) };
+  return `
+    <tr class="fu-detail-row">
+      <td colspan="7">
+        <div class="fu-detail-card">
+          ${FU_METRICS.map(
+            (metric) => `
+              <article class="${metric === "utilize" ? "utilize" : ""} ${metric === "leads" ? "fu-leads-trigger" : ""}" data-school="${escapeHtml(schoolName)}">
+                <span>${FU_LABELS[metric]}</span>
+                <strong>${metric === "utilize" ? values[metric] : numberText(values[metric] || 0)}</strong>
+              </article>
+            `,
+          ).join("")}
+        </div>
+      </td>
+    </tr>
+    ${selectedFuLeadSchool === schoolName ? fuAgentInlineRow(schoolName) : ""}
+  `;
+}
+
+function fuAgentInlineRow(schoolName) {
+  const agents = fuSummaryForSchool(schoolName).agents || [];
+  return `
+    <tr class="fu-agent-row">
+      <td colspan="7">
+        <div class="fu-agent-table-wrap">
+          <table class="fu-agent-table">
+            <thead>
+              <tr>
+                <th>Nama Agen</th>
+                <th>Leads</th>
+                <th>Paid</th>
+                <th>Hold</th>
+                <th>Prospect</th>
+                <th>Connected</th>
+                <th>No Respon</th>
+                <th>Invalid</th>
+                <th>%Utilize</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                agents.length
+                  ? agents
+                      .map(
+                        (agent) => `
+                          <tr>
+                            <td>${escapeHtml(agent.name)}</td>
+                            <td>${numberText(agent.leads)}</td>
+                            <td>${numberText(agent.Paid)}</td>
+                            <td>${numberText(agent.Hold)}</td>
+                            <td>${numberText(agent.Prospek)}</td>
+                            <td>${numberText(agent.Connect)}</td>
+                            <td>${numberText(agent["No Respon"])}</td>
+                            <td>${numberText(agent.Invalid)}</td>
+                            <td>${fuUtilize(agent)}</td>
+                          </tr>
+                        `,
+                      )
+                      .join("")
+                  : `<tr><td colspan="9">Tidak ada data agen</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
+      </td>
+    </tr>
+  `;
 }
 
 function activeScope() {
@@ -930,24 +1028,24 @@ function renderMainTable(rows) {
   const query = normalizeSearchText(schoolSearchQuery);
   const filtered = rows.filter((row) => {
     if (level !== "all" && row.level !== level) return false;
-    if (activeMode === "school" && query && !normalizeSearchText(row.name).includes(query)) return false;
+    if ((activeMode === "school" || activeMode === "fu") && query && !normalizeSearchText(row.name).includes(query)) return false;
     return true;
   });
-  if (activeMode === "school" && selectedSchool && !filtered.some((row) => row.name === selectedSchool)) {
+  if ((activeMode === "school" || activeMode === "fu") && selectedSchool && !filtered.some((row) => row.name === selectedSchool)) {
     selectedSchool = null;
   }
   byId("branchGradeRows").innerHTML = filtered
     .map((row) => {
-      const label = activeMode === "school" ? row.name : row.grade;
+      const label = activeMode === "school" || activeMode === "fu" ? row.name : row.grade;
       const achievement = achievementRatio(row.current, row.target);
-      const clickable = activeMode === "school" ? "school-row" : "";
+      const clickable = activeMode === "school" || activeMode === "fu" ? "school-row" : "";
       const selected =
-        activeMode === "school" && row.name === selectedSchool
+        (activeMode === "school" || activeMode === "fu") && row.name === selectedSchool
           ? "selected-row"
           : activeMode === "grade" && selectedGradeBreakdown?.grade === row.grade
             ? "selected-breakdown-row"
             : "";
-      const dataSchool = activeMode === "school" ? ` data-school="${escapeHtml(row.name)}"` : "";
+      const dataSchool = activeMode === "school" || activeMode === "fu" ? ` data-school="${escapeHtml(row.name)}"` : "";
       const selectedMetric =
         activeMode === "grade" && selectedGradeBreakdown?.grade === row.grade
           ? selectedGradeBreakdown.metric
@@ -984,6 +1082,8 @@ function renderMainTable(rows) {
               )
               .join("")}
           `
+          : activeMode === "fu" && row.name === selectedSchool
+            ? fuInlineRow(row.name)
           : "";
       return `
         <tr class="${clickable} ${selected}"${dataSchool}${gradeData}>
@@ -1236,7 +1336,7 @@ function activeRows() {
         ? { type: "region", value: "Regional - Sulawesi Selatan" }
         : { type: "branch", value: activeBranch };
 
-  if (activeMode === "school") return schoolRowsForScope(scope);
+  if (activeMode === "school" || activeMode === "fu") return schoolRowsForScope(scope);
 
   if (activeView === "makassar") {
     return gradeRows({ type: "region", value: "Regional - Makassar Raya" });
@@ -1260,8 +1360,10 @@ function render() {
   const schoolSearchInput = byId("schoolSearchInput");
 
   byId("subtitle").textContent = `${activeBranch} | ${branchRegion(activeBranch) || "-"}`;
-  byId("mainGrowthTitle").textContent = `${activeMode === "school" ? "User per Sekolah" : "User per Grade"} - ${activeTitle()}`;
-  byId("mainDimensionHeader").textContent = activeMode === "school" ? "SEKOLAH" : "GRADE";
+  const modeTitle =
+    activeMode === "fu" ? "Monitoring FU" : activeMode === "school" ? "User per Sekolah" : "User per Grade";
+  byId("mainGrowthTitle").textContent = `${modeTitle} - ${activeTitle()}`;
+  byId("mainDimensionHeader").textContent = activeMode === "school" || activeMode === "fu" ? "SEKOLAH" : "GRADE";
   byId("branchTableCaption").textContent = activeTitle();
   const branchOnly = currentAccess?.type === "branch";
   document.body.classList.toggle("branch-access", branchOnly);
@@ -1275,7 +1377,7 @@ function render() {
       button.disabled = false;
     });
   }
-  schoolSearchBar.hidden = activeMode !== "school";
+  schoolSearchBar.hidden = activeMode !== "school" && activeMode !== "fu";
   schoolSearchInput.value = schoolSearchQuery;
   renderSummary();
   renderMainTable(mainRows);
@@ -1327,11 +1429,13 @@ byId("branchSelect").addEventListener("change", (event) => {
   selectedSchool = null;
   selectedGradeBreakdown = null;
   selectedSchoolGradeBranchBreakdown = null;
+  selectedFuLeadSchool = null;
   render();
 });
 byId("levelSelect").addEventListener("change", () => {
   selectedGradeBreakdown = null;
   selectedSchoolGradeBranchBreakdown = null;
+  selectedFuLeadSchool = null;
   render();
 });
 byId("refreshBtn").addEventListener("click", loadSheet);
@@ -1339,6 +1443,7 @@ byId("refreshBtn").addEventListener("click", loadSheet);
 byId("schoolSearchInput").addEventListener("input", (event) => {
   schoolSearchQuery = event.target.value;
   selectedSchool = null;
+  selectedFuLeadSchool = null;
   window.clearTimeout(schoolSearchRenderTimer);
   schoolSearchRenderTimer = window.setTimeout(render, 180);
 });
@@ -1346,6 +1451,7 @@ byId("schoolSearchInput").addEventListener("input", (event) => {
 byId("clearSchoolSearch").addEventListener("click", () => {
   schoolSearchQuery = "";
   selectedSchool = null;
+  selectedFuLeadSchool = null;
   render();
 });
 
@@ -1355,12 +1461,20 @@ document.querySelectorAll(".mode-tab").forEach((button) => {
     selectedSchool = null;
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
+    selectedFuLeadSchool = null;
     schoolSearchQuery = "";
     render();
   });
 });
 
 byId("branchGradeRows").addEventListener("click", (event) => {
+  const fuLeadCard = event.target.closest(".fu-leads-trigger");
+  if (activeMode === "fu" && fuLeadCard) {
+    selectedFuLeadSchool = selectedFuLeadSchool === fuLeadCard.dataset.school ? null : fuLeadCard.dataset.school;
+    render();
+    return;
+  }
+
   if (event.target.closest(".close-inline-branch-breakdown")) {
     selectedSchoolGradeBranchBreakdown = null;
     render();
@@ -1400,6 +1514,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
   if (!row) return;
   selectedSchool = selectedSchool === row.dataset.school ? null : row.dataset.school;
   selectedSchoolGradeBranchBreakdown = null;
+  selectedFuLeadSchool = null;
   render();
 });
 
@@ -1410,6 +1525,7 @@ document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
     selectedSchool = null;
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
+    selectedFuLeadSchool = null;
     render();
   };
   card.addEventListener("click", activate);
@@ -1428,6 +1544,7 @@ document.querySelectorAll(".view-tab").forEach((button) => {
     selectedSchool = null;
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
+    selectedFuLeadSchool = null;
     render();
   });
 });
