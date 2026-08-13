@@ -640,6 +640,21 @@ select {
   font-weight: 900;
 }
 
+.fu-mode .level-strip article:first-child > span {
+  background: rgba(0, 188, 212, 0.14);
+  color: var(--rg-teal);
+}
+
+.fu-mode .level-strip article:nth-child(2) > span {
+  background: rgba(44, 180, 112, 0.14);
+  color: var(--rg-green);
+}
+
+.fu-mode .level-strip article:nth-child(3) > span {
+  background: rgba(255, 122, 26, 0.14);
+  color: var(--rg-orange);
+}
+
 .level-strip strong {
   display: block;
   margin-top: 9px;
@@ -700,15 +715,16 @@ select {
 
 .fu-detail-line {
   display: flex !important;
-  flex-wrap: wrap;
-  gap: 0 8px;
+  flex-wrap: nowrap;
+  gap: 0 7px;
   min-height: 0 !important;
   border-radius: 0 !important;
   padding: 0 !important;
   background: transparent !important;
   color: var(--muted) !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-weight: 800 !important;
+  white-space: nowrap;
 }
 
 .fu-detail-line span {
