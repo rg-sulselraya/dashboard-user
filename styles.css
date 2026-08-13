@@ -656,18 +656,31 @@ select {
   line-height: 1.4;
 }
 
+.level-strip small:empty {
+  display: none;
+}
+
 .fu-rate {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   min-height: 24px;
   margin: 8px 8px 0 0;
   border-radius: 999px;
-  padding: 0 9px;
+  padding: 0 10px;
   background: #ffffff;
+  border: 1px solid #dceef4;
   color: #506477;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.fu-rate strong {
+  margin: 0;
+  color: var(--rg-blue-dark);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .level-achievement {

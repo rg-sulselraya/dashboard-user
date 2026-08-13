@@ -440,6 +440,23 @@ function fuRate(summary, metric) {
   return summary.leads ? achievementText(toNumber(summary[metric]), summary.leads) : "-";
 }
 
+function fuLevelMeta(summary) {
+  if (!summary.leads) return "";
+  return [
+    ["No Respon", "No Respon"],
+    ["Connected", "Connect"],
+    ["Prospect", "Prospek"],
+    ["Utilize", "utilize"],
+  ]
+    .map(([label, metric]) => {
+      const value = metric === "utilize" ? fuUtilize(summary) : fuRate(summary, metric);
+      if (value === "-" || value === "0%") return "";
+      return `<span class="fu-rate"><span>${label}</span><strong>${value}</strong></span>`;
+    })
+    .filter(Boolean)
+    .join("");
+}
+
 function inScope(record, scope) {
   if (scope.type === "branch") return record.branch === scope.value;
   return record.regional === scope.value;
@@ -1010,12 +1027,7 @@ function renderSummary() {
     ].forEach(([id, levelName]) => {
       const summary = fuSummaryForLevel(viewGrades, levelName);
       byId(`${id}Users`).textContent = numberText(summary.leads);
-      byId(`${id}Meta`).innerHTML = `
-        <span class="fu-rate">No Respon ${fuRate(summary, "No Respon")}</span>
-        <span class="fu-rate">Connected ${fuRate(summary, "Connect")}</span>
-        <span class="fu-rate">Prospect ${fuRate(summary, "Prospek")}</span>
-        <span class="fu-rate">Utilize ${fuUtilize(summary)}</span>
-      `;
+      byId(`${id}Meta`).innerHTML = fuLevelMeta(summary);
     });
   } else {
     byId("sdUsers").textContent = numberText(sd.current);
