@@ -436,6 +436,10 @@ function fuUtilize(summary) {
   return summary.leads ? `${Math.round((utilized / summary.leads) * 100)}%` : "-";
 }
 
+function fuRate(summary, metric) {
+  return summary.leads ? achievementText(toNumber(summary[metric]), summary.leads) : "-";
+}
+
 function inScope(record, scope) {
   if (scope.type === "branch") return record.branch === scope.value;
   return record.regional === scope.value;
@@ -645,6 +649,21 @@ function schoolRowsForScope(scope) {
       };
     })
     .sort((a, b) => b.current - a.current || a.name.localeCompare(b.name, "id-ID"));
+}
+
+function fuSummaryForLevel(rows, level) {
+  return rows
+    .filter((row) => level === "all" || row.level === level)
+    .reduce(
+      (summary, row) => {
+        const schoolSummary = fuSummaryForSchool(row.name);
+        FU_METRICS.filter((metric) => metric !== "utilize").forEach((metric) => {
+          summary[metric] += toNumber(schoolSummary[metric]);
+        });
+        return summary;
+      },
+      Object.fromEntries(FU_METRICS.filter((metric) => metric !== "utilize").map((metric) => [metric, 0])),
+    );
 }
 
 function selectedSchoolGradeRows() {
@@ -983,12 +1002,29 @@ function renderSummary() {
   const sd = sumRows(viewGrades, "SD");
   const smp = sumRows(viewGrades, "SMP");
   const sma = sumRows(viewGrades, "SMA");
-  byId("sdUsers").textContent = numberText(sd.current);
-  byId("sdMeta").innerHTML = `Target ${numberText(sd.target)} | Achievement <span class="level-achievement"${achievementStyle(sd.achievement)}>${percentText(sd.achievement)}</span> | 25/26 YTD ${numberText(sd.previous)} | Growth <span class="${trendClass(sd.growth)}">${sd.growth}</span>`;
-  byId("smpUsers").textContent = numberText(smp.current);
-  byId("smpMeta").innerHTML = `Target ${numberText(smp.target)} | Achievement <span class="level-achievement"${achievementStyle(smp.achievement)}>${percentText(smp.achievement)}</span> | 25/26 YTD ${numberText(smp.previous)} | Growth <span class="${trendClass(smp.growth)}">${smp.growth}</span>`;
-  byId("smaUsers").textContent = numberText(sma.current);
-  byId("smaMeta").innerHTML = `Target ${numberText(sma.target)} | Achievement <span class="level-achievement"${achievementStyle(sma.achievement)}>${percentText(sma.achievement)}</span> | 25/26 YTD ${numberText(sma.previous)} | Growth <span class="${trendClass(sma.growth)}">${sma.growth}</span>`;
+  if (activeMode === "fu") {
+    [
+      ["sd", "SD"],
+      ["smp", "SMP"],
+      ["sma", "SMA"],
+    ].forEach(([id, levelName]) => {
+      const summary = fuSummaryForLevel(viewGrades, levelName);
+      byId(`${id}Users`).textContent = numberText(summary.leads);
+      byId(`${id}Meta`).innerHTML = `
+        <span class="fu-rate">No Respon ${fuRate(summary, "No Respon")}</span>
+        <span class="fu-rate">Connected ${fuRate(summary, "Connect")}</span>
+        <span class="fu-rate">Prospect ${fuRate(summary, "Prospek")}</span>
+        <span class="fu-rate">Utilize ${fuUtilize(summary)}</span>
+      `;
+    });
+  } else {
+    byId("sdUsers").textContent = numberText(sd.current);
+    byId("sdMeta").innerHTML = `Target ${numberText(sd.target)} | Achievement <span class="level-achievement"${achievementStyle(sd.achievement)}>${percentText(sd.achievement)}</span> | 25/26 YTD ${numberText(sd.previous)} | Growth <span class="${trendClass(sd.growth)}">${sd.growth}</span>`;
+    byId("smpUsers").textContent = numberText(smp.current);
+    byId("smpMeta").innerHTML = `Target ${numberText(smp.target)} | Achievement <span class="level-achievement"${achievementStyle(smp.achievement)}>${percentText(smp.achievement)}</span> | 25/26 YTD ${numberText(smp.previous)} | Growth <span class="${trendClass(smp.growth)}">${smp.growth}</span>`;
+    byId("smaUsers").textContent = numberText(sma.current);
+    byId("smaMeta").innerHTML = `Target ${numberText(sma.target)} | Achievement <span class="level-achievement"${achievementStyle(sma.achievement)}>${percentText(sma.achievement)}</span> | 25/26 YTD ${numberText(sma.previous)} | Growth <span class="${trendClass(sma.growth)}">${sma.growth}</span>`;
+  }
 
   document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
     card.classList.toggle("selected", card.dataset.view === activeView);
@@ -1361,7 +1397,7 @@ function render() {
 
   byId("subtitle").textContent = `${activeBranch} | ${branchRegion(activeBranch) || "-"}`;
   const modeTitle =
-    activeMode === "fu" ? "Monitoring FU" : activeMode === "school" ? "User per Sekolah" : "User per Grade";
+    activeMode === "fu" ? "Leads per Sekolah" : activeMode === "school" ? "User per Sekolah" : "User per Grade";
   byId("mainGrowthTitle").textContent = `${modeTitle} - ${activeTitle()}`;
   byId("mainDimensionHeader").textContent = activeMode === "school" || activeMode === "fu" ? "SEKOLAH" : "GRADE";
   byId("branchTableCaption").textContent = activeTitle();
