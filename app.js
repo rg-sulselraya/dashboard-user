@@ -441,20 +441,26 @@ function fuRate(summary, metric) {
 }
 
 function fuLevelMeta(summary) {
-  if (!summary.leads) return "";
-  return [
-    ["No Respon", "No Respon"],
-    ["Connected", "Connect"],
+  const formatRate = (metric) => {
+    const value = fuRate(summary, metric);
+    return value === "0%" ? "-" : value;
+  };
+  const utilize = fuUtilize(summary);
+  const details = [
+    ["Hold", "Hold"],
     ["Prospect", "Prospek"],
-    ["Utilize", "utilize"],
+    ["Connected", "Connect"],
+    ["No Respon", "No Respon"],
   ]
     .map(([label, metric]) => {
-      const value = metric === "utilize" ? fuUtilize(summary) : fuRate(summary, metric);
-      if (value === "-" || value === "0%") return "";
-      return `<span class="fu-rate"><span>${label}</span><strong>${value}</strong></span>`;
+      const value = formatRate(metric);
+      return `<span>${label} <strong>${value}</strong></span>`;
     })
-    .filter(Boolean)
-    .join("");
+    .join("<i>|</i>");
+  return `
+    <b>Utilize <strong>${utilize === "0%" ? "-" : utilize}</strong></b>
+    <span class="fu-detail-line">${details}</span>
+  `;
 }
 
 function inScope(record, scope) {
@@ -1432,6 +1438,7 @@ function render() {
   renderGradeSchoolBreakdown();
   dashboardGrid.classList.add("full-width");
   document.body.classList.add("school-mode");
+  document.body.classList.toggle("fu-mode", activeMode === "fu");
   if (gradeChart) {
     gradeChart.destroy();
     gradeChart = null;
