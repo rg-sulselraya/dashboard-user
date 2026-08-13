@@ -440,6 +440,14 @@ function fuRate(summary, metric) {
   return summary.leads ? achievementText(toNumber(summary[metric]), summary.leads) : "-";
 }
 
+function fuUtilizeClass(value) {
+  const rate = Number.parseInt(value, 10);
+  if (Number.isNaN(rate)) return "utilize-empty";
+  if (rate < 40) return "utilize-low";
+  if (rate < 70) return "utilize-mid";
+  return "utilize-high";
+}
+
 function fuLevelMeta(summary) {
   const formatRate = (metric) => {
     const value = fuRate(summary, metric);
@@ -458,7 +466,7 @@ function fuLevelMeta(summary) {
     })
     .join("<i>|</i>");
   return `
-    <b>Utilize <strong>${utilize === "0%" ? "-" : utilize}</strong></b>
+    <b class="fu-utilize-line">Utilize <strong class="${fuUtilizeClass(utilize)}">${utilize === "0%" ? "-" : utilize}</strong></b>
     <span class="fu-detail-line">${details}</span>
   `;
 }
