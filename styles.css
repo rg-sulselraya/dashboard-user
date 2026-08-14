@@ -1286,6 +1286,72 @@ tbody tr:hover {
   color: var(--rg-orange);
   font-weight: 800;
 }
+.fu-agent-metric {
+  min-width: 34px;
+  min-height: 28px;
+  border: 1px solid #d9c7f0;
+  border-radius: 6px;
+  background: #fffaff;
+  color: #6f3aa8;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.fu-agent-metric:hover {
+  border-color: #9d6bd4;
+  background: #f5ecff;
+}
+.fu-agent-detail-row td {
+  padding: 0 16px 12px;
+  background: #fffaf4 !important;
+}
+.fu-agent-detail-panel {
+  border: 1px solid #d9c7f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+.fu-agent-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  background: #fffaff;
+  color: #6f3aa8;
+  font-size: 12px;
+  font-weight: 900;
+}
+.fu-agent-detail-head span {
+  color: #6f3aa8;
+}
+.fu-agent-detail-panel table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.fu-agent-detail-panel th,
+.fu-agent-detail-panel td {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.fu-agent-detail-panel th {
+  background: #faf5ff;
+  color: #6f3aa8;
+  border-bottom: 1px solid #d9c7f0;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.fu-agent-detail-panel td {
+  border-bottom: 1px solid #f3e5d8;
+}
+.fu-agent-detail-panel td:first-child {
+  color: var(--ink);
+}
+.fu-agent-detail-panel td:nth-child(2),
+.fu-agent-detail-panel td:nth-child(3) {
+  color: var(--ink);
+  font-weight: 800;
+}
 
 .grade-branch-trigger {
   cursor: pointer;

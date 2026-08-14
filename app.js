@@ -41,6 +41,7 @@ let gradeChart;
 let selectedGradeBreakdown = null;
 let selectedSchoolGradeBranchBreakdown = null;
 let selectedFuLeadSchool = null;
+let selectedFuAgentDetail = null;
 let schoolSearchQuery = "";
 let schoolSearchRenderTimer;
 
@@ -763,6 +764,55 @@ function fuInlineRow(schoolName) {
 
 function fuAgentInlineRow(schoolName) {
   const agents = fuSummaryForSchool(schoolName).agents || [];
+  const detailMetricLabels = { Paid: "Paid", Hold: "Hold", Prospek: "Prospect" };
+  const detailRow = (agent) => {
+    if (
+      !selectedFuAgentDetail ||
+      selectedFuAgentDetail.school !== schoolName ||
+      selectedFuAgentDetail.agent !== agent.name
+    ) {
+      return "";
+    }
+    const rows = agent.details?.[selectedFuAgentDetail.metric] || [];
+    return `
+      <tr class="fu-agent-detail-row">
+        <td colspan="9">
+          <div class="fu-agent-detail-panel">
+            <div class="fu-agent-detail-head">
+              <strong>${escapeHtml(agent.name)} - ${detailMetricLabels[selectedFuAgentDetail.metric]}</strong>
+              <span>${numberText(rows.length)} siswa</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Siswa</th>
+                  <th>Kelas</th>
+                  <th>Tanggal Akhir FU</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  rows.length
+                    ? rows
+                        .map(
+                          (row) => `
+                            <tr>
+                              <td>${escapeHtml(row.name || "-")}</td>
+                              <td>${escapeHtml(row.class || "-")}</td>
+                              <td>${escapeHtml(row.date || "-")}</td>
+                            </tr>
+                          `,
+                        )
+                        .join("")
+                    : `<tr><td colspan="3">Tidak ada detail siswa</td></tr>`
+                }
+              </tbody>
+            </table>
+          </div>
+        </td>
+      </tr>
+    `;
+  };
   return `
     <tr class="fu-agent-row">
       <td colspan="7">
@@ -790,14 +840,15 @@ function fuAgentInlineRow(schoolName) {
                           <tr>
                             <td>${escapeHtml(agent.name)}</td>
                             <td>${numberText(agent.leads)}</td>
-                            <td>${numberText(agent.Paid)}</td>
-                            <td>${numberText(agent.Hold)}</td>
-                            <td>${numberText(agent.Prospek)}</td>
+                            <td><button class="fu-agent-metric" type="button" data-school="${escapeHtml(schoolName)}" data-agent="${escapeHtml(agent.name)}" data-metric="Paid">${numberText(agent.Paid)}</button></td>
+                            <td><button class="fu-agent-metric" type="button" data-school="${escapeHtml(schoolName)}" data-agent="${escapeHtml(agent.name)}" data-metric="Hold">${numberText(agent.Hold)}</button></td>
+                            <td><button class="fu-agent-metric" type="button" data-school="${escapeHtml(schoolName)}" data-agent="${escapeHtml(agent.name)}" data-metric="Prospek">${numberText(agent.Prospek)}</button></td>
                             <td>${numberText(agent.Connect)}</td>
                             <td>${numberText(agent["No Respon"])}</td>
                             <td>${numberText(agent.Invalid)}</td>
                             <td>${fuUtilize(agent)}</td>
                           </tr>
+                          ${detailRow(agent)}
                         `,
                       )
                       .join("")
@@ -1493,12 +1544,14 @@ byId("branchSelect").addEventListener("change", (event) => {
   selectedGradeBreakdown = null;
   selectedSchoolGradeBranchBreakdown = null;
   selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
   render();
 });
 byId("levelSelect").addEventListener("change", () => {
   selectedGradeBreakdown = null;
   selectedSchoolGradeBranchBreakdown = null;
   selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
   render();
 });
 byId("refreshBtn").addEventListener("click", loadSheet);
@@ -1507,6 +1560,7 @@ byId("schoolSearchInput").addEventListener("input", (event) => {
   schoolSearchQuery = event.target.value;
   selectedSchool = null;
   selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
   window.clearTimeout(schoolSearchRenderTimer);
   schoolSearchRenderTimer = window.setTimeout(render, 180);
 });
@@ -1515,6 +1569,7 @@ byId("clearSchoolSearch").addEventListener("click", () => {
   schoolSearchQuery = "";
   selectedSchool = null;
   selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
   render();
 });
 
@@ -1525,6 +1580,7 @@ document.querySelectorAll(".mode-tab").forEach((button) => {
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
     selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
     schoolSearchQuery = "";
     render();
   });
@@ -1534,6 +1590,23 @@ byId("branchGradeRows").addEventListener("click", (event) => {
   const fuLeadCard = event.target.closest(".fu-leads-trigger");
   if (activeMode === "fu" && fuLeadCard) {
     selectedFuLeadSchool = selectedFuLeadSchool === fuLeadCard.dataset.school ? null : fuLeadCard.dataset.school;
+    selectedFuAgentDetail = null;
+    render();
+    return;
+  }
+  const fuAgentMetric = event.target.closest(".fu-agent-metric");
+  if (activeMode === "fu" && fuAgentMetric) {
+    const nextDetail = {
+      school: fuAgentMetric.dataset.school,
+      agent: fuAgentMetric.dataset.agent,
+      metric: fuAgentMetric.dataset.metric,
+    };
+    const sameDetail =
+      selectedFuAgentDetail &&
+      selectedFuAgentDetail.school === nextDetail.school &&
+      selectedFuAgentDetail.agent === nextDetail.agent &&
+      selectedFuAgentDetail.metric === nextDetail.metric;
+    selectedFuAgentDetail = sameDetail ? null : nextDetail;
     render();
     return;
   }
@@ -1578,6 +1651,7 @@ byId("branchGradeRows").addEventListener("click", (event) => {
   selectedSchool = selectedSchool === row.dataset.school ? null : row.dataset.school;
   selectedSchoolGradeBranchBreakdown = null;
   selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
   render();
 });
 
@@ -1589,6 +1663,7 @@ document.querySelectorAll(".summary-card[data-view]").forEach((card) => {
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
     selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
     render();
   };
   card.addEventListener("click", activate);
@@ -1608,6 +1683,7 @@ document.querySelectorAll(".view-tab").forEach((button) => {
     selectedGradeBreakdown = null;
     selectedSchoolGradeBranchBreakdown = null;
     selectedFuLeadSchool = null;
+  selectedFuAgentDetail = null;
     render();
   });
 });
