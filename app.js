@@ -191,6 +191,16 @@ async function loadSheetsFromAppsScript() {
   if (!payload.sheets?.["2526"] || !payload.sheets?.["2627"] || !payload.sheets?.Validasi) {
     throw new Error("Format data Apps Script tidak sesuai");
   }
+  const hasHeaders = (rows, headers) => {
+    const normalized = (rows[0] || []).map((header) => clean(header).toLowerCase());
+    return headers.every((header) => normalized.some((value) => value.includes(header)));
+  };
+  if (
+    !hasHeaders(payload.sheets["2526"], ["cabang bac", "tanggal paid", "jenjang", "asal sekolah", "grade"]) ||
+    !hasHeaders(payload.sheets["2627"], ["cabang bac", "tanggal paid", "jenjang", "asal sekolah", "grade"])
+  ) {
+    throw new Error("Struktur data Apps Script tidak lengkap");
+  }
   return payload;
 }
 async function loadAllSheets() {
