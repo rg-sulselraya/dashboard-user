@@ -205,7 +205,20 @@ async function loadSheetsFromAppsScript() {
 }
 async function loadAllSheets() {
   try {
-    return await loadSheetsFromAppsScript();
+    const [rows2526, rows2627, rowsValidasi] = await Promise.all([
+      loadSheetRows("2526"),
+      loadSheetRows("2627"),
+      loadSheetRows("Validasi"),
+    ]);
+    return {
+      sheets: {
+        "2526": rows2526,
+        "2627": rows2627,
+        Validasi: rowsValidasi,
+      },
+      updatedAt: new Date().toISOString(),
+      source: "sheet",
+    };
   } catch (error) {
     const localSheets = window.LOCAL_SHEET_CSV;
     if (!localSheets?.["2526"] || !localSheets?.["2627"] || !localSheets?.Validasi) {
@@ -389,7 +402,7 @@ function recordsFromSheet(rows) {
   const levelIndex = columnIndex(headers, ["jenjang"], 11);
   const schoolIndex = columnIndex(headers, ["asal sekolah"], 12);
   const gradeIndex = columnIndex(headers, ["grade"], 14);
-  const regionalIndex = columnIndex(headers, ["regional"], 15);
+  const regionalIndex = columnIndex(headers, ["regional", "region"], 15);
 
   return rows.slice(1).map((row) => ({
     branch: clean(row[branchIndex]),
